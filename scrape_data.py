@@ -16,7 +16,7 @@ def get_yearwise_record(df):
 	df['avg'] = df['Avg'] = df['Runs']/df['acc_inn']
 	return df
 
-def get_record_by_innings(url):
+def get_record_by_innings(url, type='frame'):
 
 	driver = webdriver.Chrome("C:\\ChromeDriver\\chromedriver")
 	driver.get(url)
@@ -57,7 +57,11 @@ def get_record_by_innings(url):
 	df['NotOuts'] = df['Bat1'].apply(lambda x : replace_regex(x)) + \
 					df['Bat2'].apply(lambda x : replace_regex(x))
 	df['acc_inn'] = 2 - df['NotOuts']
-	return df
+	if type == 'json':
+		return df.to_json()
+	else:
+		return df
 	
+
 
 
