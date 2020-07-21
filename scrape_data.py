@@ -5,6 +5,8 @@ import os
 import numpy as np
 import re
 
+chrome_driver_path = "C:\\ChromeDriver\\chromedriver"
+
 def replace_regex(var):
 	if re.match('.*[DNB$|\*|\-]',var):
 		return 1
@@ -16,18 +18,23 @@ def get_yearwise_record(df):
 	df['avg'] = df['Avg'] = df['Runs']/df['acc_inn']
 	return df
 
+def web_content(driver,url):
+	driver.get(url)
+	return driver.page_source
+
+def web_driver(url):
+	options = webdriver.ChromeOptions()
+	options.add_argument("headless")
+	driver = webdriver.Chrome(executable_path=chrome_driver_path, chrome_options=options)
+	return driver
+
 def get_record_by_innings(url, type='frame'):
 
-	driver = webdriver.Chrome("C:\\ChromeDriver\\chromedriver")
-	driver.get(url)
-	content = driver.page_source
-
+	content = web_content(web_driver(url), url)
 	bs = BeautifulSoup(content)
 
 	table_class = bs.find_all("table",{"class":"engineTable"})[3]
-
 	rows = table_class.find_all('th')
-	#print(rows)
 	header = []
 	for row in rows:
 		for a in row.findAll('a'):
