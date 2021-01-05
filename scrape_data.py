@@ -3,9 +3,19 @@ from bs4 import BeautifulSoup
 import pandas as pd
 import os
 import numpy as np
-import re
+import re, os
 
 chrome_driver_path = "C:\\ChromeDriver\\chromedriver"
+
+def is_docker():
+	path = "/proc/self/cgroup"
+	if not os.path.isfile(path): 
+		return False
+	with open(path) as f:
+		for line in f:
+			if re.match("\d+:[\w=]+:/docker(-[ce]e)?/\w+", line):
+				return True
+		return False
 
 def replace_regex(var):
 	if re.match('.*[DNB$|\*|\-]',var):
@@ -23,9 +33,22 @@ def web_content(driver,url):
 	return driver.page_source
 
 def web_driver(url):
-	options = webdriver.ChromeOptions()
-	options.add_argument("headless")
-	driver = webdriver.Chrome(executable_path=chrome_driver_path, chrome_options=options)
+	
+	print(is_docker())
+
+	if is_docker():
+		print("Running from docker")
+		chrome_options = webdriver.ChromeOptions()
+		chrome_options.add_argument('--no-sandbox')
+		chrome_options.add_argument('--window-size=1420,1080')
+		chrome_options.add_argument('--headless')
+		chrome_options.add_argument('--disable-gpu')
+		driver = webdriver.Chrome(chrome_options=chrome_options)
+	else:
+		options = webdriver.ChromeOptions()
+		options.add_argument("headless")
+		driver = webdriver.Chrome(executable_path=chrome_driver_path, chrome_options=options)
+
 	return driver
 
 def get_record_by_innings(url, type='frame'):
